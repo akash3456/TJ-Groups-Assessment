@@ -1,0 +1,54 @@
+﻿@model PairingTest.Web.Models.QuestionnaireViewModel
+<html>
+    <head >
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+    </head>
+    <body>
+        <p id="Json_Data" name="Json_Data"></p>
+        @{
+
+            
+            WebRequest request = WebRequest.Create("http://localhost:49852/api/questions");
+            WebResponse response = request.GetResponse();
+            Stream datastream = response.GetResponseStream();
+            StreamReader str = new StreamReader(datastream);
+            string read_resp = str.ReadToEnd();
+            str.Close();
+            response.Close();
+
+            System.Web.Script.Serialization.JavaScriptSerializer oSerializer =
+                new System.Web.Script.Serialization.JavaScriptSerializer();
+            var sJSON = oSerializer.Serialize(read_resp);
+            string[] split = read_resp.Split(',');
+            foreach (var te in split) {
+                var fin_string = te.Replace("{","").Replace("}","").Replace("]","").Replace("[","").
+                    Replace("\"\"","").Replace("\"","");
+                Response.Write("<table class='table'><tr><td><label><b>" + fin_string +
+                    "</b></label></tr></td>" + "</table><br/>");
+            }
+
+
+            WebRequest req = WebRequest.Create("http://localhost:49852/api/answer");
+            WebResponse res = req.GetResponse();
+            Stream ds = res.GetResponseStream();
+
+            StreamReader read = new StreamReader(ds);
+            string resp = read.ReadToEnd();
+            read.Close();
+            res.Close();
+
+            System.Web.Script.Serialization.JavaScriptSerializer oSerial = new System.Web.Script.Serialization.JavaScriptSerializer();
+            string output = oSerial.Serialize(resp);
+            string[] fin = output.Split(',');
+            Response.Write("<select> ");
+            foreach (var test in fin)
+            {
+                var fin_str = test.Replace("{", "").Replace("\"", "").Replace("[", "").Replace(@"\", "").
+                    Replace("]", "").Replace("}", "");
+                Response.Write("<table class='table'><tr><td><label><b><option>" + fin_str + "</option></b></td></tr></table>");
+            }
+            Response.Write("</select>");
+        }
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    </body>
+</html>
